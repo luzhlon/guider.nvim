@@ -49,25 +49,39 @@ au FileType guider call guider#syntax()
 
 fun! guider#(key)
     let k = get(s:char_to_show, a:key, a:key)
-    let tree = {}
-    let local_dict = {}
+    let prefix = guider#split(k)
+    " 获取用户输入的多余字符，在映射分支走向岔路的时候会发生
+    while 1
+        let ch = guider#getch(0)
+        if empty(ch) | break | endif
+        call add(prefix, ch)
+    endw
+    let prefix_keys = join(prefix, '')
+
+    let global_tree = {}        " 全局按键映射树
+    let local_tree = {}         " Buffer内按键映射树
 
     let map_cmd = get(s:mode_to_map, mode(), '')
     if empty(map_cmd)
         echoerr 'Not support this mode: ' . mode()
     else
-        for line in split(execute(map_cmd . ' ' . k), "\n")
+        for line in split(execute(map_cmd . ' ' . prefix_keys), "\n")
             let lhs = split(line[3:])[0]
             let mapd = guider#maparg(lhs)
             if empty(mapd)
                 return guider#nop()
             endif
-            call guider#insert(mapd.buffer ? local_dict : tree, lhs, mapd)
+            let lhs_keys = guider#split(lhs)[len(prefix):]
+            call guider#insert(mapd.buffer ? local_tree : global_tree, lhs_keys, mapd)
         endfor
-        let tree = extend(tree, local_dict)
+        let global_tree = extend(global_tree, local_tree)
 
-        let prefix = guider#split(k)
-        call timer_start(0, {t->guider#guide(prefix, tree)})
+        if empty(global_tree)
+            " 如果没有找到prefix的前缀映射，将用户输入的按键序列返回
+            return join(guider#chars(prefix), '')
+        else
+            call timer_start(0, {t->guider#guide(prefix, global_tree)})
+        endif
     endif
     return guider#nop()
 endf
@@ -102,13 +116,16 @@ fun! guider#maparg(lhs)
     if mapd.rhs =~ '^\s*:' && mapd.silent
         let rhs = substitute(mapd.rhs, '^\s*', '', '')
         let mapd.rhs = substitute(rhs, '<cr>$', '', '')
+    else
+        let mapd.rhs = substitute(mapd.rhs, '\C^<Plug>', '', '')
     endif
     return mapd
 endf
 
 fun! guider#chars(l)
     let stack = copy(a:l)
-    return map(stack, {i,v->len(v) > 1 ? eval(printf('"\%s"',v)): v})
+    " 长度大于1，且可打印
+    return map(stack, {i,v->len(v) > 1 && v =~ '\v^\p+$' ? eval(printf('"\%s"',v)): v})
 endf
 
 fun! guider#guide(prefix, tree)
@@ -122,15 +139,13 @@ fun! guider#guide(prefix, tree)
 endf
 
 " 构建按键映射树-插入节点
-fun! guider#insert(tree, lhs, mapinfo)
+fun! guider#insert(tree, lhs_keys, mapinfo)
     let d = a:tree
-    " echom a:lhs
-    let lhs = guider#split(a:lhs)
-    if len(lhs) < 2 | return | endif
-    let l = guider#chars(lhs)
+    if empty(a:lhs_keys) | return | endif
+    let l = guider#chars(a:lhs_keys)
 
     let tail = l[-1]
-    for c in l[1:-2]
+    for c in l[:-2]
         let s = get(d, c)
         let s = type(s) != v:t_dict ? {} : s
         let d[c] = s
@@ -233,9 +248,9 @@ fun! guider#prompt(l)
     return c
 endf
 
-fun! guider#getch()
-    let ch = getchar()
-    return type(ch) == v:t_number ? nr2char(ch): ch
+fun! guider#getch(...)
+    let ch = a:0 ? getchar(a:1): getchar()
+    return type(ch) == v:t_number && ch > 0 ? nr2char(ch): ch
 endf
 
 fun! guider#split(lhs)
