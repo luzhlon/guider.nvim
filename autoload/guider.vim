@@ -105,19 +105,17 @@ fun! guider#get_info(key, buffer)
 endf
 
 fun! guider#maparg(lhs)
-    " let l:ret = a:mapping
-    " let l:ret = substitute(l:ret, '\c<cr>$', '', '')
-    " let l:ret = substitute(l:ret, '^:', '', '')
-    " let l:ret = substitute(l:ret, '^\c<c-u>', '', '')
-    " let l:ret = substitute(l:ret, '^<Plug>', '', '')
-    " return l:ret
-    " echo a:lhs | call getchar()
     let mapd = maparg(a:lhs, mode(), 0, 1)
     if mapd.rhs =~ '^\s*:' && mapd.silent
         let rhs = substitute(mapd.rhs, '^\s*', '', '')
         let mapd.rhs = substitute(rhs, '<cr>$', '', '')
+    elseif match(mapd.rhs, '\C^<Plug>(') >= 0
+        let mapd.rhs = substitute(mapd.rhs, '\C^<Plug>(', '', '')
+        let mapd.rhs = substitute(mapd.rhs, ')$', '', '')
     else
-        let mapd.rhs = substitute(mapd.rhs, '\C^<Plug>', '', '')
+        let mapd.rhs = substitute(mapd.rhs, '\C^<Plug>\|<c-u>', '', '')
+        let mapd.rhs = substitute(mapd.rhs, '\C^\s*:\s*call\s*', '', '')
+        let mapd.rhs = substitute(mapd.rhs, '\C<cr>$', '', '')
     endif
     return mapd
 endf
