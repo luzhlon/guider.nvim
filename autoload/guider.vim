@@ -137,7 +137,9 @@ fun! guider#guide(prefix, tree)
     let s:screenrow = screenrow()
     let s:screencol = screencol()
     if guider#popup(a:tree)
-        call feedkeys(join(guider#chars(g:guider_stack), ''), 't')
+        let chars = join(guider#chars(g:guider_stack), '')
+        sil! call repeat#set(chars, v:count)
+        call feedkeys(chars, 't')
     endif
 endf
 
