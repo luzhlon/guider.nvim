@@ -56,7 +56,7 @@ fun! guider#(key)
         if empty(ch) | break | endif
         call add(prefix, ch)
     endw
-    let prefix_keys = join(prefix, '')
+    let prefix_keys = guider#keys(prefix)
 
     let global_tree = {}        " 全局按键映射树
     let local_tree = {}         " Buffer内按键映射树
@@ -65,7 +65,7 @@ fun! guider#(key)
     if empty(map_cmd)
         echoerr 'Not support this mode: ' . mode()
     else
-        for line in split(execute(map_cmd . ' ' . prefix_keys), "\n")
+        for line in split(execute(map_cmd . ' ' . join(prefix_keys, '')), "\n")
             let lhs = split(line[3:])[0]
             let mapd = guider#maparg(lhs)
             if empty(mapd)
@@ -80,7 +80,7 @@ fun! guider#(key)
             " 如果没有找到prefix的前缀映射，将用户输入的按键序列返回
             return join(guider#chars(prefix), '')
         else
-            call timer_start(0, {t->guider#guide(prefix, global_tree)})
+            call timer_start(0, {t->guider#guide(prefix_keys, global_tree)})
         endif
     endif
     return guider#nop()
@@ -122,10 +122,15 @@ fun! guider#maparg(lhs)
     return mapd
 endf
 
+fun! guider#keys(l)
+    let l = copy(a:l)
+    return map(l, {i,v->has_key(s:char_to_show, v) ? s:char_to_show[v] : v})
+endf
+
 fun! guider#chars(l)
-    let stack = copy(a:l)
+    let l = copy(a:l)
     " 长度大于1，且可打印
-    return map(stack, {i,v->len(v) > 1 && v =~ '\v^\p+$' ? eval(printf('"\%s"',v)): v})
+    return map(l, {i,v->len(v) > 1 && v =~ '\v^\p+$' ? eval(printf('"\%s"',v)): v})
 endf
 
 fun! guider#guide(prefix, tree)
