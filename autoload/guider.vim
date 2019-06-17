@@ -240,7 +240,7 @@ fun! guider#prompt(l)
     call setwinvar(wid, '&cursorline', 0)
     call setwinvar(wid, '&list', 0)
     " call setwinvar(wid, '&listchars', 'tab:  |')
-    call setwinvar(wid, '&winhl', 'SignColumn:CursorLineNr')
+    call setwinvar(wid, '&winhl', 'SignColumn:Directory')
 
     let sep = ' - '
     echon "\r" | echohl Comment
@@ -269,7 +269,7 @@ endf
 fun! guider#syntax()
     syn match Title /\.\.\./
     syn match Directory /<.*>/
-    syn match CursorLineNr /^\S\+/
+    syn match Directory /^\S\+/
 endf
 
 fun! guider#nop()
