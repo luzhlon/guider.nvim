@@ -10,6 +10,14 @@ let s:mode_to_map = {
     \ 'i': 'imap',
     \ 'c': 'cmap',
     \ 'v': 'vmap', 'V': 'vmap', "\<c-v>": 'vmap',
+    \ 'no': 'omap',
+    \ 'nov': 'xmap', 'noV': 'xmap', "no\<c-v>": 'xmap',
+\ }
+
+let s:mode_to_mode = {
+    \ 'n': 'n', 'i': 'i', 'c': 'c',
+    \ 'v': 'v', 'V': 'v', "\<c-v>": 'v',
+    \ 'no': 'o', 'nov': 'x', 'noV': 'x', "no\<c-v>": 'x',
 \ }
 
 let s:char_to_show = {
@@ -61,9 +69,10 @@ fun! guider#(key)
     let global_tree = {}        " 全局按键映射树
     let local_tree = {}         " Buffer内按键映射树
 
-    let map_cmd = get(s:mode_to_map, mode(), '')
+    let g:guider_mode = mode(1)
+    let map_cmd = get(s:mode_to_map, g:guider_mode, '')
     if empty(map_cmd)
-        echoerr 'Not support this mode: ' . mode()
+        echoerr 'Not support this mode: ' . g:guider_mode
     else
         for line in split(execute(map_cmd . ' ' . join(prefix_keys, '')), "\n")
             let lhs = split(line[3:])[0]
@@ -93,10 +102,10 @@ fun! guider#get_info(key, buffer)
 
     let k = a:key
     let empty_config = {}
-    if mode() =~? '^i'
+    if g:guider_mode =~? '^i'
         return get(get(g:, 'guider#config#insert', empty_config), k, '')
     endif
-    if mode() =~? '^v' || mode() == "\<c-v>"
+    if g:guider_mode =~? '^v' || g:guider_mode == "\<c-v>"
         if has_key(get(g:, 'guider#config#visual', empty_config), k)
             return g:guider#config#visual[k]
         end
@@ -105,8 +114,10 @@ fun! guider#get_info(key, buffer)
 endf
 
 fun! guider#maparg(lhs)
-    let mapd = maparg(a:lhs, mode(), 0, 1)
-    if mapd.rhs =~ '^\s*:' && mapd.silent
+    let mapd = maparg(a:lhs, s:mode_to_mode[g:guider_mode], 0, 1)
+    if empty(mapd)
+        echoerr 'There is no mapping for' a:lhs 'in' g:guider_mode 'mode'
+    elseif mapd.rhs =~ '^\s*:' && mapd.silent
         let rhs = substitute(mapd.rhs, '^\s*', '', '')
         let mapd.rhs = substitute(rhs, '<cr>$', '', '')
     elseif match(mapd.rhs, '\C^<Plug>(') >= 0
@@ -139,6 +150,8 @@ fun! guider#guide(prefix, tree)
     if guider#popup(a:tree)
         let chars = join(guider#chars(g:guider_stack), '')
         sil! call repeat#set(chars, v:count)
+        " Operating-Mode
+        let chars = g:guider_mode =~ 'o' ? v:operator . chars : chars
         call feedkeys(chars, 't')
     endif
 endf
