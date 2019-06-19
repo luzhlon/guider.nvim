@@ -1,6 +1,6 @@
 
 let g:guider#tabsize = get(g:, 'guider#tabsize', 16)
-let g:guider#bufname = '[guider]'
+let g:guider#mapfile = get(g:, 'guider#mapfile', 'guider-map.vim')
 
 let g:guider_stack = []
 let s:prompt_buffer = 0
@@ -51,7 +51,8 @@ let s:char_to_show = {
     \ "\<m-\>": '<m-\>',
 \ }
 
-runtime! autoload/guider/keymap.vim
+let g:guider#bufname = '[guider]'
+exec 'runtime!' g:guider#mapfile
 com! -nargs=+ Guider call guider#(<f-args>)
 au FileType guider call guider#syntax()
 
