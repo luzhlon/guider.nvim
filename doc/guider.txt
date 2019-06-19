@@ -1,0 +1,64 @@
+guider.txt               Nvim or vim8
+
+Version: 0.1.0
+Author:  luzhlon@outlook.com
+
+=========================================================================
+CONTENTS 						*guider-contents*
+
+Introduction		|guider-introduction|
+Usage			|guider-usage|
+Install			|guider-install|
+Interface		|guider-interface|
+  Functions		  |guider-functions|
+  Variables		  |guider-variables|
+Configuration Examples	|guider-examples|
+FAQ			|guider-faq|
+Compatibility		|guider-compatibility|
+
+==============================================================================
+INTRODUCTION					    *guider-introduction*
+
+==============================================================================
+USAGE       					    *guider-usage*
+
+==============================================================================
+INTERFACE					    *guider-interface*
+
+------------------------------------------------------------------------------
+FUNCTIONS					    *guider-functions*
+
+guider#({key})						*guider#()*
+	Popup a window to select your mappings. {key} is the first character
+	of the mapping. 
+
+------------------------------------------------------------------------------
+VARIABLES					    *guider-variables*
+
+						    *g:guider#position*
+g:guider#position
+	The position of guider's window.
+
+	"cursor": Make left-top corner of the guider's window at the cursor
+		  position.
+	"bottom": The guider's window is always at the bottom.
+
+	Default: "cursor"
+
+						    *g:guider#mapfile*
+g:guider#mapfile
+	The extra configuration about `guider.nvim` in 'rtp'.
+	It will be loaded when guider.vim execute. 
+
+	Default: "guider-map.vim"
+
+==============================================================================
+EXAMPLES 					    *guider-examples*
+
+==============================================================================
+FAQ					            *guider-faq*
+
+==============================================================================
+COMPATIBILITY					    *guider-compatibility*
+
+vim:tw=78:ts=8:ft=help:norl:noet:fen:
