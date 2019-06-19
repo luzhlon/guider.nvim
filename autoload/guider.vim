@@ -240,7 +240,7 @@ fun! guider#prompt(l)
         \ 'height': len(a:l), 'width': get(g:, 'guider#width', 64),
         \ 'row': &lines, 'col': 0, 'focusable': 0,
     \ }
-    let position = get(g:, 'guider#position', 'bottom')
+    let position = get(g:, 'guider#position', 'cursor')
     if position == 'cursor'
         let win_conf.anchor = 'NW'
         let win_conf.row = s:screenrow
