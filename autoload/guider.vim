@@ -72,10 +72,18 @@ fun! guider#(key)
 
     let g:guider_mode = mode(1)
     let map_cmd = get(s:mode_to_map, g:guider_mode, '')
+
     if empty(map_cmd)
         echoerr 'Not support this mode: ' . g:guider_mode
     else
-        for line in split(execute(map_cmd . ' ' . join(prefix_keys, '')), "\n")
+        let map_cmd = map_cmd . ' ' . join(prefix_keys, '')
+        if k =~ '<buffer>'
+            let prefix = []
+            let prefix_keys = []
+            let map_cmd = map_cmd . ' ' . '<buffer>'
+        endif
+
+        for line in split(execute(map_cmd), "\n")
             let lhs = split(line[3:])[0]
             let mapd = guider#maparg(lhs)
             if empty(mapd)
