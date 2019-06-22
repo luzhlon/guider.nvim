@@ -179,25 +179,34 @@ fun! guider#insert(tree, lhs_keys, mapinfo)
     let d[tail] = a:mapinfo
 endf
 
+fun! s:tobufline(l)
+    " let sep = "\t│ "
+    let sep = "\t "
+    return map(sort(a:l, 'i'), {i,v->join([v.k, v.info], sep)})
+endf
+
 fun! guider#popup(tree)
     " 构造要显示的buffer内容
     let ld = [] | let li = [] | let lli = []
     let prefix_chars = join(guider#chars(g:guider_stack), '')
-    " let sep = "\t│ "
-    let sep = "\t "
     for [k, v] in items(a:tree)
         let sk = get(s:char_to_show, k, strtrans(k))
         let buffer = get(v, 'buffer')
         let info = guider#get_info(prefix_chars . k, buffer)
         let info = len(info) ? info : get(v, 'rhs', '')
-        let line = join([sk, info, ''], sep)
+        let line = {'k': sk, 'info': info}
         if has_key(v, 'lhs')
             call add(buffer ? lli : li, line)
         else
-            let line .= '...'
+            let line['info'] .= "\t..."
             call add(ld, line)
         endif
     endfor
+
+    let li = s:tobufline(li)
+    let ld = s:tobufline(ld)
+    let lli = s:tobufline(lli)
+
     let li += ld
     if len(lli)
         " call add(lli, join(repeat([repeat('─', g:guider#tabsize)], 3), '┼'))
