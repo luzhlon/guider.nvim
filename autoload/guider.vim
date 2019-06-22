@@ -126,16 +126,14 @@ fun! guider#maparg(lhs)
     let mapd = maparg(a:lhs, s:mode_to_mode[g:guider_mode], 0, 1)
     if empty(mapd)
         echoerr 'There is no mapping for' a:lhs 'in' g:guider_mode 'mode'
-    elseif mapd.rhs =~ '^\s*:' && mapd.silent
-        let rhs = substitute(mapd.rhs, '^\s*', '', '')
-        let mapd.rhs = substitute(rhs, '<cr>$', '', '')
+    elseif mapd.rhs =~ '^\s*:' && mapd.silent && !mapd.expr
+        let mapd.rhs = substitute(mapd.rhs, '^\s*', '', '')
+        let mapd.rhs = substitute(mapd.rhs, '\c<cr>$', '', '')
+        let mapd.rhs = substitute(mapd.rhs, '\c^:\s*call\s*', '', '')
+        let mapd.rhs = substitute(mapd.rhs, '\c^:<c-u>\s*call\s*', '', '')
     elseif match(mapd.rhs, '\C^<Plug>(') >= 0
-        let mapd.rhs = substitute(mapd.rhs, '\C^<Plug>(', '', '')
+        let mapd.rhs = substitute(mapd.rhs, '\c^<Plug>(', '', '')
         let mapd.rhs = substitute(mapd.rhs, ')$', '', '')
-    else
-        let mapd.rhs = substitute(mapd.rhs, '\C^<Plug>\|<c-u>', '', '')
-        let mapd.rhs = substitute(mapd.rhs, '\C^\s*:\s*call\s*', '', '')
-        let mapd.rhs = substitute(mapd.rhs, '\C<cr>$', '', '')
     endif
     return mapd
 endf
