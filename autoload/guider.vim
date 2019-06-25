@@ -20,44 +20,13 @@ let s:mode_to_mode = {
     \ 'no': 'o', 'nov': 'x', 'noV': 'x', "no\<c-v>": 'x',
 \ }
 
-let s:char_to_show = {
-    \ ' ': '<space>', "\t": '<tab>', "\n": '<cr>',
-    \ "\<m-a>": '<m-a>',
-    \ "\<m-b>": '<m-b>',
-    \ "\<m-c>": '<m-c>',
-    \ "\<m-d>": '<m-d>',
-    \ "\<m-e>": '<m-e>',
-    \ "\<m-f>": '<m-f>',
-    \ "\<m-g>": '<m-g>',
-    \ "\<m-h>": '<m-h>',
-    \ "\<m-i>": '<m-i>',
-    \ "\<m-j>": '<m-j>',
-    \ "\<m-k>": '<m-k>',
-    \ "\<m-l>": '<m-l>',
-    \ "\<m-m>": '<m-m>',
-    \ "\<m-n>": '<m-n>',
-    \ "\<m-o>": '<m-o>',
-    \ "\<m-p>": '<m-p>',
-    \ "\<m-q>": '<m-q>',
-    \ "\<m-r>": '<m-r>',
-    \ "\<m-s>": '<m-s>',
-    \ "\<m-t>": '<m-t>',
-    \ "\<m-u>": '<m-u>',
-    \ "\<m-v>": '<m-v>',
-    \ "\<m-w>": '<m-w>',
-    \ "\<m-x>": '<m-x>',
-    \ "\<m-y>": '<m-y>',
-    \ "\<m-z>": '<m-z>',
-    \ "\<m-\>": '<m-\>',
-\ }
-
 let g:guider#bufname = '[guider]'
 exec 'runtime!' g:guider#mapfile
 com! -nargs=+ Guider call guider#(<f-args>)
 au FileType guider call guider#syntax()
 
 fun! guider#(key)
-    let k = get(s:char_to_show, a:key, a:key)
+    let k = guider#tokey(a:key)
     let prefix = guider#split(k)
     " 获取用户输入的多余字符，在映射分支走向岔路的时候会发生
     while 1
@@ -138,9 +107,30 @@ fun! guider#maparg(lhs)
     return mapd
 endf
 
+let s:char_to_show = {
+    \ ' ': '<space>', "\t": '<tab>', "\n": '<cr>',
+\ }
+
+fun! guider#tokey(char)
+    let c = a:char
+    if len(c) == 1 && char2nr(c) <= 32
+        return has_key(s:char_to_show, c) ? s:char_to_show[c] :
+            \ printf('<c-%s>', nr2char(char2nr(c) + char2nr('a') - 1))
+    elseif c[:1] == "\<F1>"[:1]
+        return printf('<F%s>', c[-1])
+    elseif c[:1] == "\<F11>"[:1]
+        return printf('<F1%s>', c[-1])
+    elseif c[:2] == "\<m-a>"[:2]
+        return printf('<m-%s>', guider#tokey(c[3:]))
+    elseif c[:2] == "\<c-.>"[:2]
+        return printf('<c-%s>', guider#tokey(c[3:]))
+    endif
+    return c
+endf
+
 fun! guider#keys(l)
     let l = copy(a:l)
-    return map(l, {i,v->has_key(s:char_to_show, v) ? s:char_to_show[v] : v})
+    return map(l, {i,v->guider#tokey(v)})
 endf
 
 fun! guider#chars(l)
@@ -190,7 +180,7 @@ fun! guider#popup(tree)
     let ld = [] | let li = [] | let lli = []
     let prefix_chars = join(guider#chars(g:guider_stack), '')
     for [k, v] in items(a:tree)
-        let sk = get(s:char_to_show, k, strtrans(k))
+        let sk = guider#tokey(k)
         let buffer = get(v, 'buffer')
         let info = guider#get_info(prefix_chars . k, buffer)
         let info = len(info) ? info : get(v, 'rhs', '')
