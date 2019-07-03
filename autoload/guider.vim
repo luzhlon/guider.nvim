@@ -109,23 +109,33 @@ endf
 
 let s:char_to_show = {
     \ ' ': '<space>', "\t": '<tab>', "\n": '<cr>',
+    \ "\<LeftMouse>": '<LeftMouse>', "\<LeftRelease>": '<LeftRelease>',
+    \ "\<RightMouse>": '<RightMouse>', "\<RightRelease>": '<RightRelease>',
 \ }
+
+fun! s:single_key(char)
+    let c = a:char
+    if has_key(s:char_to_show, c)
+        return s:char_to_show[c]
+    elseif len(c) == 1 && char2nr(c) <= 32
+        return printf('<c-%s>', nr2char(char2nr(c) + char2nr('a') - 1))
+    elseif c[:1] ==# "\<F1>"[:1]
+        return printf('<F%s>', c[-1])
+    elseif c[:1] ==# "\<F11>"[:1]
+        return printf('<F1%s>', c[-1])
+    endif
+    return c
+endf
 
 fun! guider#tokey(char)
     let c = a:char
-    if len(c) == 1 && char2nr(c) <= 32
-        return has_key(s:char_to_show, c) ? s:char_to_show[c] :
-            \ printf('<c-%s>', nr2char(char2nr(c) + char2nr('a') - 1))
-    elseif c[:1] == "\<F1>"[:1]
-        return printf('<F%s>', c[-1])
-    elseif c[:1] == "\<F11>"[:1]
-        return printf('<F1%s>', c[-1])
-    elseif c[:2] == "\<m-a>"[:2]
-        return printf('<m-%s>', guider#tokey(c[3:]))
-    elseif c[:2] == "\<c-.>"[:2]
-        return printf('<c-%s>', guider#tokey(c[3:]))
+    if c[:2] ==# "\<m-a>"[:2]
+        return printf('<m-%s>', s:single_key(c[3:]))
+    elseif c[:2] ==# "\<c-.>"[:2]
+        return printf('<c-%s>', s:single_key(c[3:]))
+    else
+        return s:single_key(c)
     endif
-    return c
 endf
 
 fun! guider#keys(l)
