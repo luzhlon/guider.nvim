@@ -19,8 +19,38 @@ Compatibility		|guider-compatibility|
 ==============================================================================
 INTRODUCTION					    *guider-introduction*
 
+`guider.nvim` is a vim keymap-display plugin inspired by
+    - https://github.com/liuchengxu/vim-which-key
+    - https://github.com/hecal3/vim-leader-guide
+
+The improvement of `guider.nvim` is it can show guider's window under insert,
+visual, operator-pending mode.
+
 ==============================================================================
 USAGE       					    *guider-usage*
+>
+    let guider#config = {
+	\ ' f': 'File',
+	\ ' fc': 'CD Current File',
+	\ ' fr': 'Recent Files',
+	\ ' fs': 'New Scratch',
+	\ ' fy': 'Copy FullPath To Clipboard',
+	\ ' q': 'Quit',
+    \ }
+    nn <silent><space>fc    :cd %:h<cr>
+    nn <silent><space>fr    :Denite file/old'<cr>
+    nn <silent><space>fs    :call vwm#scrach()<cr>
+    nn         <space>ft    :conf e $TEMP/
+    nn <silent><space>fy    :let @+=expand('%:p')<cr>
+    nn <silent><space>q     :confirm qa<cr>
+
+    " Guide for mappings with <space> prefix
+    nore  <expr><space> guider#(' ')
+    " Guide for mappings with 'g' prefix
+    nore  <expr>g       guider#('g')
+    " Guide for all local-buffer mappings
+    nore  <expr>\       guider#('<buffer>')
+<
 
 ==============================================================================
 INTERFACE					    *guider-interface*
@@ -48,12 +78,14 @@ g:guider#position
 						    *g:guider#mapfile*
 g:guider#mapfile
 	The extra configuration about `guider.nvim` in 'rtp'.
-	It will be loaded when guider.vim execute. 
+	It will be loaded when guider.vim execute.
 
-	Default: "guider-map.vim"
+	Default: "guider-map.vim".  Correspond to `run! guider-map.vim`
 
 ==============================================================================
 EXAMPLES 					    *guider-examples*
+
+See |guider-usage|.
 
 ==============================================================================
 FAQ					            *guider-faq*
