@@ -108,21 +108,26 @@ fun! guider#maparg(lhs)
 endf
 
 let s:char_to_show = {
-    \ ' ': '<space>', "\t": '<tab>', "\n": '<cr>',
-    \ "\<LeftMouse>": '<LeftMouse>', "\<LeftRelease>": '<LeftRelease>',
-    \ "\<RightMouse>": '<RightMouse>', "\<RightRelease>": '<RightRelease>',
+    \ ' ': 'space', "\t": 'tab', "\n": 'cr', "\<bs>": 'bs',
+    \ "\<LeftMouse>": 'LeftMouse', "\<LeftRelease>": 'LeftRelease',
+    \ "\<RightMouse>": 'RightMouse', "\<RightRelease>": 'RightRelease',
+    \ "\<up>": 'up', "\<down>": 'down', "\<left>": 'left', "\<right>": 'right',
+\ }
+let s:char_control = {
+    \ 'U': 'left', 'V': 'right',
 \ }
 
-fun! s:single_key(char)
+fun! s:single_key(char, angle)
     let c = a:char
+    let a = a:angle
     if has_key(s:char_to_show, c)
-        return s:char_to_show[c]
+        return printf(a ? '<%s>' : '%s', s:char_to_show[c])
     elseif len(c) == 1 && char2nr(c) <= 32
         return printf('<c-%s>', nr2char(char2nr(c) + char2nr('a') - 1))
     elseif c[:1] ==# "\<F1>"[:1]
-        return printf('<F%s>', c[-1])
+        return printf(a ? '<F%s>' : 'F%s', c[len(c)-1])
     elseif c[:1] ==# "\<F11>"[:1]
-        return printf('<F1%s>', c[-1])
+        return printf(a ? '<F1%s>': 'F1%s', c[len(c)-1])
     endif
     return c
 endf
@@ -130,11 +135,13 @@ endf
 fun! guider#tokey(char)
     let c = a:char
     if c[:2] ==# "\<m-a>"[:2]
-        return printf('<m-%s>', s:single_key(c[3:]))
+        return printf('<m-%s>', s:single_key(c[3:], 0))
+    elseif c[:1] ==# "\<c-left>"[:1]
+        return printf('<c-%s>', get(s:char_control, c[len(c)-1], '?'))
     elseif c[:2] ==# "\<c-.>"[:2]
-        return printf('<c-%s>', s:single_key(c[3:]))
+        return printf('<c-%s>', s:single_key(c[3:], 0))
     else
-        return s:single_key(c)
+        return s:single_key(c, 1)
     endif
 endf
 
