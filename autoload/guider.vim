@@ -158,15 +158,18 @@ endf
 
 fun! guider#guide(prefix, tree)
     let g:guider_stack = a:prefix
-    " 缓存光标位置，因为第二次弹框时获取到的位置是在屏幕底部
+    " 缓存光标位置，否则第二次弹框时会因为调用getchar()的原因，获取到的位置是在屏幕底部
     let s:screenrow = screenrow()
     let s:screencol = screencol()
-    if guider#popup(a:tree)
-        let chars = join(guider#chars(g:guider_stack), '')
+    let has_map = guider#popup(a:tree)
+    let chars = join(guider#chars(g:guider_stack), '')
+    " Operating-Mode
+    let chars = g:guider_mode =~ 'o' ? v:operator . chars : chars
+    if has_map
         sil! call repeat#set(chars, v:count)
-        " Operating-Mode
-        let chars = g:guider_mode =~ 'o' ? v:operator . chars : chars
         call feedkeys(chars, 't')
+    else
+        call feedkeys(chars, 'n')
     endif
 endf
 
