@@ -12,6 +12,7 @@ let s:mode_to_map = {
     \ 'v': 'vmap', 'V': 'vmap', "\<c-v>": 'vmap',
     \ 'no': 'omap',
     \ 'nov': 'xmap', 'noV': 'xmap', "no\<c-v>": 'xmap',
+    \ 'niI': 'nmap', 'niR': 'nmap', 'niV': 'nmap',
 \ }
 
 let s:mode_to_mode = {
@@ -92,7 +93,8 @@ fun! guider#get_info(key, buffer)
 endf
 
 fun! guider#maparg(lhs)
-    let mapd = maparg(a:lhs, s:mode_to_mode[g:guider_mode], 0, 1)
+    let m = get(s:mode_to_mode, g:guider_mode, g:guider_mode[0])
+    let mapd = maparg(a:lhs, m, 0, 1)
     if empty(mapd)
         echoerr 'There is no mapping for' a:lhs 'in' g:guider_mode 'mode'
     elseif mapd.rhs =~ '^\s*:' && mapd.silent && !mapd.expr
