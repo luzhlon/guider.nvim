@@ -254,8 +254,6 @@ fun! guider#prompt(l)
         call setbufvar(bnr, '&buflisted', 0)
         call setbufvar(bnr, '&buftype', 'nofile')
         call setbufvar(bnr, '&ft', 'guider')
-        call setbufvar(bnr, '&wrap', 0)
-        call setbufvar(bnr, '&number', 0)
     endif
 
     let _ = has('nvim') ? nvim_buf_set_lines(bnr, 0, -1, 0, a:l)
@@ -282,6 +280,8 @@ fun! guider#prompt(l)
     call setwinvar(wid, '&list', 0)
     " call setwinvar(wid, '&listchars', 'tab:  |')
     call setwinvar(wid, '&winhl', 'SignColumn:Directory')
+    call setwinvar(wid, '&wrap', 0)
+    call setwinvar(wid, '&number', 0)
 
     let sep = ' - '
     echon "\r" | echohl Comment
